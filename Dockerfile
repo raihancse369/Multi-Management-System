@@ -1,10 +1,21 @@
-# Use a PHP 8.2 compatible image to meet Composer's requirements
-FROM richarvey/nginx-php-fpm:8.2
+# Start with the official PHP 8.2 FPM image
+FROM php:8.2-fpm-alpine
 
-COPY . /var/www/html/ 
+# Install Nginx and required extensions
+RUN apk add --no-cache nginx
 
-# Run Composer Install explicitly BEFORE starting the app
+# Install Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+# Copy application code
+WORKDIR /var/www/html
+COPY . .
+
+# Run Composer installation
 RUN composer install --no-dev --optimize-autoloader
+
+# Nginx config and entrypoint (You will need to add more setup here)
+# ... (This requires more complex changes and may not be necessary if Option 1 works)
 
 # Image config
 ENV SKIP_COMPOSER 1 # Set this back to 1 if you ran it manually above
