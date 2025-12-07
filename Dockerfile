@@ -1,35 +1,18 @@
-# Start with the official PHP 8.2 FPM image
-FROM php:8.2-fpm-alpine
+FROM richarvey/nginx-php-fpm:8.2
 
-# Install Nginx and required extensions
-RUN apk add --no-cache nginx
+# Copy application code to /var/www/html
+COPY . /var/www/html/ 
 
-# Install Composer
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+# Make the start script executable
+RUN chmod +x /var/www/html/start.sh
 
-# Copy application code
-WORKDIR /var/www/html
-COPY . .
-
-# Run Composer installation
+# Run Composer Install explicitly
 RUN composer install --no-dev --optimize-autoloader
 
-# Nginx config and entrypoint (You will need to add more setup here)
-# ... (This requires more complex changes and may not be necessary if Option 1 works)
-
 # Image config
-ENV SKIP_COMPOSER 1 # Set this back to 1 if you ran it manually above
+ENV SKIP_COMPOSER 1 
 ENV WEBROOT /var/www/html/public
-ENV PHP_ERRORS_STDERR 1
-ENV RUN_SCRIPTS 1
-ENV REAL_IP_HEADER 1
+# ... (The rest of your ENV settings)
 
-# Laravel config
-ENV APP_ENV production
-ENV APP_DEBUG false
-ENV LOG_CHANNEL stderr
-
-# Allow composer to run as root
-ENV COMPOSER_ALLOW_SUPERUSER 1
-
-CMD ["/start.sh"]
+# Change CMD to point to the correct path
+CMD ["/var/www/html/start.sh"]
