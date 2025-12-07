@@ -1,4 +1,4 @@
-FROM richarvey/nginx-php-fpm:1.7.2
+FROM richarvey/nginx-php-fpm:8.2  # Use PHP 8.2 (or 8.1 if 8.2 causes issues)
 
 COPY . /var/www/html/ 
 
