@@ -1,4 +1,5 @@
-FROM richarvey/nginx-php-fpm:8.2  # Use PHP 8.2 (or 8.1 if 8.2 causes issues)
+# Use a PHP 8.2 compatible image to meet Composer's requirements
+FROM richarvey/nginx-php-fpm:8.2
 
 COPY . /var/www/html/ 
 
