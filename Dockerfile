@@ -1,35 +1,33 @@
 FROM php:8.2-fpm
 
-# Install system packages (added libpq-dev for Postgres)
+# Install system packages + postgres driver
 RUN apt-get update && apt-get install -y nginx zip unzip git curl nodejs npm libpq-dev
 
-# Install PHP extensions
 RUN docker-php-ext-install pdo pdo_mysql pdo_pgsql
 
-# Set working directory
 WORKDIR /var/www/html
 
-# Copy project
 COPY . .
 
-# Install composer
+# Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
-
-# Install dependencies
 RUN composer install --no-dev --optimize-autoloader
 
-# Build frontend assets
+# Node assets
 RUN npm install && npm run build
 
-# Copy nginx config
 COPY conf/nginx/nginx-site.conf /etc/nginx/sites-enabled/default
+COPY conf/php-fpm.d/zz-custom.conf /usr/local/etc/php-fpm.d/zz-custom.conf
 
 RUN chown -R www-data:www-data /var/www/html
 
-# Generate env
+# Laravel commands
 RUN cp .env.example .env && php artisan key:generate
+RUN php artisan storage:link
+RUN chmod -R 775 storage bootstrap/cache
+RUN php artisan config:clear && php artisan cache:clear && php artisan route:clear
 
 EXPOSE 80
 
-CMD service nginx start && php-fpm
+CMD ["sh", "-c", "service nginx start && php-fpm"]
 
