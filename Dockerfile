@@ -1,18 +1,17 @@
-FROM richarvey/nginx-php-fpm:8.2
+FROM php:8.2-fpm
 
-# Copy application code to /var/www/html
-COPY . /var/www/html/ 
+RUN apt update && apt install -y nginx zip unzip curl
 
-# Make the start script executable
-RUN chmod +x /var/www/html/start.sh
+COPY . /var/www/html
+WORKDIR /var/www/html
 
-# Run Composer Install explicitly
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+
 RUN composer install --no-dev --optimize-autoloader
 
-# Image config
-ENV SKIP_COMPOSER 1 
-ENV WEBROOT /var/www/html/public
-# ... (The rest of your ENV settings)
+RUN php artisan key:generate && \
+    php artisan config:cache && \
+    php artisan route:cache
 
-# Change CMD to point to the correct path
-CMD ["/var/www/html/start.sh"]
+CMD service nginx start && php-fpm
+
